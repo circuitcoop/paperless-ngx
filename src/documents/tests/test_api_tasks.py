@@ -370,3 +370,45 @@ class TestTasks(DirectoriesMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         mock_check_sanity.assert_not_called()
+
+    def test_handle_older_api_version(self):
+        """
+        GIVEN:
+            - A request from the API with version < 8
+        WHEN:
+            - Tasks are requested
+        THEN:
+            - Only consume file tasks are returned and the type is 'file'
+        """
+
+        task1 = PaperlessTask.objects.create(
+            task_id=str(uuid.uuid4()),
+            task_file_name="task_one.pdf",
+            task_name=PaperlessTask.TaskName.CONSUME_FILE,
+        )
+
+        task2 = PaperlessTask.objects.create(
+            task_id=str(uuid.uuid4()),
+            task_name=PaperlessTask.TaskName.CHECK_SANITY,
+            type=PaperlessTask.TaskType.AUTO,
+        )
+
+        response = self.client.get(
+            self.ENDPOINT,
+            headers={"Accept": "application/json; version=7"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["task_id"], task1.task_id)
+        self.assertEqual(response.data[0]["type"], "file")
+
+        response = self.client.get(
+            self.ENDPOINT,
+            headers={"Accept": "application/json; version=8"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]["task_id"], task2.task_id)
+        self.assertEqual(response.data[0]["type"], PaperlessTask.TaskType.AUTO)

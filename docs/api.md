@@ -413,3 +413,11 @@ Initial API version.
     list of strings. When creating or updating a custom field value of a
     document for a select type custom field, the value should be the `id` of
     the option whereas previously was the index of the option.
+
+#### Version 8
+
+-   PaperlessTask objects now have a `task_name` field which replaces the old
+    `type` field. The `type` field is now used to represent the way the task
+    was created. Additionally, the tasks endpoint now returns different types
+    of tasks other than simply 'file' tasks. See the API schema for more
+    information.

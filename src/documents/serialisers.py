@@ -421,6 +421,15 @@ class OwnedObjectListSerializer(serializers.ListSerializer):
         return super().to_representation(documents)
 
 
+class GetAPIVersionMixin:
+    def get_api_version(self):
+        return int(
+            self.context.get("request").version
+            if self.context.get("request")
+            else settings.REST_FRAMEWORK["DEFAULT_VERSION"],
+        )
+
+
 class CorrespondentSerializer(MatchingModelSerializer, OwnedObjectSerializer):
     last_correspondence = serializers.DateTimeField(read_only=True, required=False)
 
@@ -717,7 +726,7 @@ class ReadWriteSerializerMethodField(serializers.SerializerMethodField):
         return {self.field_name: data}
 
 
-class CustomFieldInstanceSerializer(serializers.ModelSerializer):
+class CustomFieldInstanceSerializer(serializers.ModelSerializer, GetAPIVersionMixin):
     field = serializers.PrimaryKeyRelatedField(queryset=CustomField.objects.all())
     value = ReadWriteSerializerMethodField(allow_null=True)
 
@@ -808,13 +817,6 @@ class CustomFieldInstanceSerializer(serializers.ModelSerializer):
                     )
 
         return data
-
-    def get_api_version(self):
-        return int(
-            self.context.get("request").version
-            if self.context.get("request")
-            else settings.REST_FRAMEWORK["DEFAULT_VERSION"],
-        )
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)
@@ -1709,7 +1711,7 @@ class UiSettingsViewSerializer(serializers.ModelSerializer):
         return ui_settings
 
 
-class TasksViewSerializer(OwnedObjectSerializer):
+class TasksViewSerializer(OwnedObjectSerializer, GetAPIVersionMixin):
     class Meta:
         model = PaperlessTask
         fields = (
@@ -1750,6 +1752,13 @@ class TasksViewSerializer(OwnedObjectSerializer):
                 except Exception:
                     pass
 
+        return result
+
+    def to_representation(self, instance: PaperlessTask):
+        result = super().to_representation(instance)
+        if self.get_api_version() < 8:
+            # Older versions only returned file tasks (filtering handled in view) and had different naming scheme
+            result["type"] = "file"
         return result
 
 

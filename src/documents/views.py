@@ -2287,6 +2287,7 @@ class TasksViewSet(ReadOnlyModelViewSet):
         ObjectOwnedOrGrantedPermissionsFilter,
     )
     filterset_class = PaperlessTaskFilterSet
+    queryset = PaperlessTask.objects.all().order_by("-date_created")
 
     TASK_AND_ARGS_BY_NAME = {
         PaperlessTask.TaskName.INDEX_OPTIMIZE: (index_optimize, {}),
@@ -2301,11 +2302,22 @@ class TasksViewSet(ReadOnlyModelViewSet):
     }
 
     def get_queryset(self):
-        queryset = PaperlessTask.objects.all().order_by("-date_created")
         task_id = self.request.query_params.get("task_id")
         if task_id is not None:
-            queryset = PaperlessTask.objects.filter(task_id=task_id)
-        return queryset
+            return PaperlessTask.objects.filter(task_id=task_id)
+        return super().get_queryset()
+
+    def list(self, request, *args, **kwargs):
+        version = int(
+            request.version if request else settings.REST_FRAMEWORK["DEFAULT_VERSION"],
+        )
+        if version < 8:
+            # Previous API versions only had file tasks, the format is also different (handled in serializer)
+            self.queryset = PaperlessTask.objects.filter(
+                task_name=PaperlessTask.TaskName.CONSUME_FILE,
+            ).order_by("-date_created")
+
+        return super().list(request, *args, **kwargs)
 
     @action(methods=["post"], detail=False)
     def acknowledge(self, request):
