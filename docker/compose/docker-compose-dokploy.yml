@@ -1,11 +1,13 @@
 services:
   pngx-broker:
+    container_name: pngx-broker
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
       - pngx-redisdata:/data
 
   pngx-db:
+    container_name: pngx-db
     image: docker.io/library/postgres:16
     restart: unless-stopped
     volumes:
@@ -26,14 +28,16 @@ services:
     volumes:
       - pngx-data:/usr/src/paperless/data
       - pngx-media:/usr/src/paperless/media
-      - ./export:/usr/src/paperless/export
-      - ./consume:/usr/src/paperless/consume
+      - pngx-export:/export:/usr/src/paperless/export
+      - pngx-consume:/usr/src/paperless/consume
     environment:
       PAPERLESS_REDIS: redis://pngx-broker:6379
       PAPERLESS_DBHOST: pngx-db
 
 volumes:
+  pngx-consume:
   pngx-data:
+  pngx-export:
   pngx-media:
   pngx-pgdata:
   pngx-redisdata:
