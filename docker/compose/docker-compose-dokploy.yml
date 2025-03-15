@@ -32,6 +32,10 @@ services:
     environment:
       PAPERLESS_REDIS: redis://redis:6379
       PAPERLESS_DBHOST: pngx-db
+      PAPERLESS_DATADIR: /config
+      PAPERLESS_MEDIA_ROOT: /data/media
+      PAPERLESS_TIME_ZONE: America/New_York
+      TZ: America/New_York
 volumes:
   pngx-consume:
   pngx-data:
