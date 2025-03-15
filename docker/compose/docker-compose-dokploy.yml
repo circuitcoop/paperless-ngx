@@ -28,7 +28,7 @@ services:
     volumes:
       - pngx-data:/usr/src/paperless/data
       - pngx-media:/usr/src/paperless/media
-      - pngx-export:/export:/usr/src/paperless/export
+      - pngx-export:/usr/src/paperless/export
       - pngx-consume:/usr/src/paperless/consume
     environment:
       PAPERLESS_REDIS: redis://pngx-broker:6379
