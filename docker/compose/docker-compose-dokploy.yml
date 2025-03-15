@@ -1,5 +1,5 @@
 services:
-  pngx-broker:
+  redis:
     container_name: pngx-broker
     image: docker.io/library/redis:7
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     depends_on:
       - pngx-db
-      - pngx-broker
+      - redis
     ports:
       - 8000
     volumes:
@@ -31,9 +31,8 @@ services:
       - pngx-export:/usr/src/paperless/export
       - pngx-consume:/usr/src/paperless/consume
     environment:
-      PAPERLESS_REDIS: redis://pngx-broker:6379
+      PAPERLESS_REDIS: redis://redis:6379
       PAPERLESS_DBHOST: pngx-db
-
 volumes:
   pngx-consume:
   pngx-data:
