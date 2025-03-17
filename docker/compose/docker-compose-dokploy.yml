@@ -1,6 +1,6 @@
 services:
   broker:
-    container_namee: broker
+    container_name: broker
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
