@@ -1,10 +1,12 @@
 services:
   broker:
+    container_namee: broker
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
       - redisdata:/data
   db:
+    container_name: db
     image: docker.io/library/mariadb:11
     restart: unless-stopped
     volumes:
@@ -16,6 +18,7 @@ services:
       MARIADB_PASSWORD: paperless
       MARIADB_ROOT_PASSWORD: paperlessf
   webserver:
+    container_name: webserver
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
     depends_on:
